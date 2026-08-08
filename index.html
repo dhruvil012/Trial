@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civil Engineer Calculator</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #334155;
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59,130,246,0.15);
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: #334155;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.3);
+      --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.4), 0 8px 10px -6px rgba(0,0,0,0.4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 40px 20px 20px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* Tabs */
+    .tabs-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 20px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      flex: 1;
+      min-width: 140px;
+      padding: 14px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .tab svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Panels */
+    .panel {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 16px 40px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input, select {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .unit {
+      padding: 0 14px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-left: 1px solid var(--border);
+      background: var(--surface-light);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+    }
+
+    select option {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    /* Results Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .result-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .result-box:hover {
+      border-color: var(--accent);
+    }
+
+    .result-box.primary {
+      border-color: var(--accent);
+      background: rgba(59,130,246,0.08);
+    }
+
+    .result-box.warning {
+      border-color: var(--warning);
+      background: rgba(245,158,11,0.08);
+    }
+
+    .result-box.success {
+      border-color: var(--success);
+      background: rgba(34,197,94,0.08);
+    }
+
+    .result-box.danger {
+      border-color: var(--danger);
+      background: rgba(239,68,68,0.08);
+    }
+
+    .result-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-box.primary .result-value { color: var(--accent); }
+    .result-box.warning .result-value { color: var(--warning); }
+    .result-box.success .result-value { color: var(--success); }
+    .result-box.danger .result-value { color: var(--danger); }
+
+    .result-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Detail rows */
+    .detail-box {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-row span:first-child {
+      color: var(--text-secondary);
+    }
+
+    .detail-row span:last-child {
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Verify box */
+    .verify-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .verify-box.show {
+      display: flex;
+    }
+
+    .verify-box.ok {
+      background: rgba(34,197,94,0.1);
+      color: var(--success);
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+
+    .verify-box.no {
+      background: rgba(239,68,68,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+
+    /* Hint */
+    .hint {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 12px;
+      background: rgba(59,130,246,0.05);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--accent);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .hint svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Copy bar */
+    .copy-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .formula-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'Courier New', monospace;
+    }
+
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-copy:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn-copy svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .header h1 { font-size: 1.5rem; }
+      .tab { min-width: 120px; padding: 12px 14px; font-size: 0.8rem; }
+      .card { padding: 18px; }
+      .result-value { font-size: 1.3rem; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.4s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1>🏗️ Civil Engineer Calculator</h1>
+    <p>Right angles, concrete mix & volume — all in one place</p>
+  </header>
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('angle')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l9-18 9 18H3z"/><path d="M12 21V3"/></svg>
+        90° Angle
+      </button>
+      <button class="tab" onclick="switchTab('mix')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M12 8v8m-4-4h8"/></svg>
+        Mix Design
+      </button>
+      <button class="tab" onclick="switchTab('volume')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        Volume & Weight
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- 90° Angle Panel -->
+    <div class="panel active" id="panel-angle">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l9-18 9 18H3z"/><path d="M12 21V3"/></svg>
+          Right Triangle Solver
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Side A (Base)</label>
+            <div class="input-wrap">
+              <input type="number" id="ang-a" placeholder="0.00" step="any" oninput="calcAngle()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Side B (Height)</label>
+            <div class="input-wrap">
+              <input type="number" id="ang-b" placeholder="0.00" step="any" oninput="calcAngle()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Hypotenuse C</label>
+          <div class="input-wrap">
+            <input type="number" id="ang-c" placeholder="0.00" step="any" oninput="calcAngle()">
+            <span class="unit">m</span>
+          </div>
+        </div>
+        <div class="verify-box" id="ang-verify">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="ang-verify-text"></span>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Enter any two sides to find the third. Enter all three to verify if it's a valid right triangle.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Results
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-hyp">—</div>
+            <div class="result-label">Hypotenuse (m)</div>
+          </div>
+          <div class="result-box">
+            <div class="result-value" id="res-area">—</div>
+            <div class="result-label">Area (m²)</div>
+          </div>
+          <div class="result-box">
+            <div class="result-value" id="res-peri">—</div>
+            <div class="result-label">Perimeter (m)</div>
+          </div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text">a² + b² = c²</span>
+          <button class="btn-copy" onclick="copyResults('angle')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mix Design Panel -->
+    <div class="panel" id="panel-mix">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Concrete Grade & Volume
+        </div>
+        <div class="form-group">
+          <label>Concrete Grade</label>
+          <div class="input-wrap">
+            <select id="mix-grade" onchange="calcMix()">
+              <option value="M10">M10 — 1 : 3 : 6</option>
+              <option value="M15">M15 — 1 : 2 : 4</option>
+              <option value="M20" selected>M20 — 1 : 1.5 : 3</option>
+              <option value="M25">M25 — 1 : 1 : 2</option>
+              <option value="M30">M30 — 1 : 0.75 : 1.5</option>
+              <option value="M35">M35 — 1 : 0.6 : 1.2</option>
+              <option value="M40">M40 — 1 : 0.5 : 1</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Wet Volume of Concrete</label>
+          <div class="input-wrap">
+            <input type="number" id="mix-vol" placeholder="0.00" step="any" oninput="calcMix()">
+            <span class="unit">m³</span>
+          </div>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Dry Volume = Wet Volume × 1.54. Cement bag = 50 kg. Densities: Cement 1440, Sand 1600, Aggregate 1500 kg/m³.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Material Quantities
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-cement">—</div>
+            <div class="result-label">Cement (bags)</div>
+          </div>
+          <div class="result-box warning">
+            <div class="result-value" id="res-sand">—</div>
+            <div class="result-label">Sand (m³)</div>
+          </div>
+          <div class="result-box success">
+            <div class="result-value" id="res-agg">—</div>
+            <div class="result-label">Aggregate (m³)</div>
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-row">
+            <span>Cement (kg)</span>
+            <span id="res-cement-kg">—</span>
+          </div>
+          <div class="detail-row">
+            <span>Sand (kg)</span>
+            <span id="res-sand-kg">—</span>
+          </div>
+          <div class="detail-row">
+            <span>Aggregate (kg)</span>
+            <span id="res-agg-kg">—</span>
+          </div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text" id="mix-ratio-label">Ratio: 1 : 1.5 : 3</span>
+          <button class="btn-copy" onclick="copyResults('mix')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volume & Weight Panel -->
+    <div class="panel" id="panel-volume">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          Dimensions
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Length</label>
+            <div class="input-wrap">
+              <input type="number" id="vol-l" placeholder="0.00" step="any" oninput="calcVolume()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Breadth</label>
+            <div class="input-wrap">
+              <input type="number" id="vol-b" placeholder="0.00" step="any" oninput="calcVolume()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Height</label>
+            <div class="input-wrap">
+              <input type="number" id="vol-h" placeholder="0.00" step="any" oninput="calcVolume()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Concrete density assumed at 2400 kg/m³. Results auto-update as you type. 1 m³ = 35.315 ft³.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Results
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-vol-m3">—</div>
+            <div class="result-label">Volume (m³)</div>
+          </div>
+          <div class="result-box warning">
+            <div class="result-value" id="res-vol-cft">—</div>
+            <div class="result-label">Volume (ft³)</div>
+          </div>
+          <div class="result-box success">
+            <div class="result-value" id="res-weight">—</div>
+            <div class="result-label">Weight (kg)</div>
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-row">
+            <span>Weight (ton)</span>
+            <span id="res-weight-ton">—</span>
+          </div>
+          <div class="detail-row">
+            <span>Cement Bags (50 kg)</span>
+            <span id="res-bags">—</span>
+          </div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text">Volume = L × B × H</span>
+          <button class="btn-copy" onclick="copyResults('volume')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    Made with ❤️ for Civil Engineers
+  </footer>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    // Tab Switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      
+      event.target.closest('.tab').classList.add('active');
+      document.getElementById('panel-' + tabName).classList.add('active');
+    }
+
+    // Format number
+    function fmt(num, decimals = 2) {
+      if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '—';
+      return Number(num).toLocaleString('en-IN', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    // ========== 90° ANGLE CALCULATOR ==========
+    function calcAngle() {
+      const a = parseFloat(document.getElementById('ang-a').value);
+      const b = parseFloat(document.getElementById('ang-b').value);
+      const c = parseFloat(document.getElementById('ang-c').value);
+      
+      const hasA = !isNaN(a) && a > 0;
+      const hasB = !isNaN(b) && b > 0;
+      const hasC = !isNaN(c) && c > 0;
+      
+      const verifyBox = document.getElementById('ang-verify');
+      const verifyText = document.getElementById('ang-verify-text');
+      
+      if (hasA && hasB && hasC) {
+        const diff = Math.abs(a*a + b*b - c*c);
+        if (diff < 0.001) {
+          verifyBox.className = 'verify-box show ok';
+          verifyText.textContent = 'Valid right triangle (a² + b² = c²)';
+        } else {
+          verifyBox.className = 'verify-box show no';
+          verifyText.textContent = 'Not a right triangle (a² + b² ≠ c²)';
+        }
+        document.getElementById('res-hyp').textContent = fmt(c, 3);
+        document.getElementById('res-area').textContent = fmt(0.5 * a * b, 3);
+        document.getElementById('res-peri').textContent = fmt(a + b + c, 3);
+      } 
+      else if (hasA && hasB) {
+        const hyp = Math.sqrt(a*a + b*b);
+        document.getElementById('res-hyp').textContent = fmt(hyp, 3);
+        document.getElementById('res-area').textContent = fmt(0.5 * a * b, 3);
+        document.getElementById('res-peri').textContent = fmt(a + b + hyp, 3);
+        verifyBox.className = 'verify-box';
+      } 
+      else if (hasA && hasC && c > a) {
+        const sideB = Math.sqrt(c*c - a*a);
+        document.getElementById('res-hyp').textContent = fmt(c, 3);
+        document.getElementById('res-area').textContent = fmt(0.5 * a * sideB, 3);
+        document.getElementById('res-peri').textContent = fmt(a + sideB + c, 3);
+        verifyBox.className = 'verify-box';
+      } 
+      else if (hasB && hasC && c > b) {
+        const sideA = Math.sqrt(c*c - b*b);
+        document.getElementById('res-hyp').textContent = fmt(c, 3);
+        document.getElementById('res-area').textContent = fmt(0.5 * sideA * b, 3);
+        document.getElementById('res-peri').textContent = fmt(sideA + b + c, 3);
+        verifyBox.className = 'verify-box';
+      } 
+      else {
+        document.getElementById('res-hyp').textContent = '—';
+        document.getElementById('res-area').textContent = '—';
+        document.getElementById('res-peri').textContent = '—';
+        verifyBox.className = 'verify-box';
+      }
+    }
+
+    // ========== CONCRETE MIX DESIGN ==========
+    function calcMix() {
+      const ratios = {
+        'M10': [1, 3, 6],
+        'M15': [1, 2, 4],
+        'M20': [1, 1.5, 3],
+        'M25': [1, 1, 2],
+        'M30': [1, 0.75, 1.5],
+        'M35': [1, 0.6, 1.2],
+        'M40': [1, 0.5, 1]
+      };
+      
+      const grade = document.getElementById('mix-grade').value;
+      const wetVol = parseFloat(document.getElementById('mix-vol').value);
+      const ratio = ratios[grade];
+      
+      document.getElementById('mix-ratio-label').textContent = 
+        `Ratio: ${ratio[0]} : ${ratio[1]} : ${ratio[2]}`;
+      
+      if (isNaN(wetVol) || wetVol <= 0) {
+        document.getElementById('res-cement').textContent = '—';
+        document.getElementById('res-sand').textContent = '—';
+        document.getElementById('res-agg').textContent = '—';
+        document.getElementById('res-cement-kg').textContent = '—';
+        document.getElementById('res-sand-kg').textContent = '—';
+        document.getElementById('res-agg-kg').textContent = '—';
+        return;
+      }
+      
+      const dryVol = wetVol * 1.54;
+      const sum = ratio[0] + ratio[1] + ratio[2];
+      
+      const cementVol = dryVol * ratio[0] / sum;
+      const sandVol = dryVol * ratio[1] / sum;
+      const aggVol = dryVol * ratio[2] / sum;
+      
+      const cementKg = cementVol * 1440;
+      const sandKg = sandVol * 1600;
+      const aggKg = aggVol * 1500;
+      
+      document.getElementById('res-cement').textContent = fmt(Math.ceil(cementKg / 50), 0);
+      document.getElementById('res-sand').textContent = fmt(sandVol, 3);
+      document.getElementById('res-agg').textContent = fmt(aggVol, 3);
+      
+      document.getElementById('res-cement-kg').textContent = fmt(cementKg, 1) + ' kg';
+      document.getElementById('res-sand-kg').textContent = fmt(sandKg, 1) + ' kg';
+      document.getElementById('res-agg-kg').textContent = fmt(aggKg, 1) + ' kg';
+    }
+
+    // ========== VOLUME & WEIGHT ==========
+    function calcVolume() {
+      const l = parseFloat(document.getElementById('vol-l').value);
+      const b = parseFloat(document.getElementById('vol-b').value);
+      const h = parseFloat(document.getElementById('vol-h').value);
+      
+      if (isNaN(l) || isNaN(b) || isNaN(h) || l <= 0 || b <= 0 || h <= 0) {
+        document.getElementById('res-vol-m3').textContent = '—';
+        document.getElementById('res-vol-cft').textContent = '—';
+        document.getElementById('res-weight').textContent = '—';
+        document.getElementById('res-weight-ton').textContent = '—';
+        document.getElementById('res-bags').textContent = '—';
+        return;
+      }
+      
+      const vol = l * b * h;
+      const weight = vol * 2400;
+      
+      document.getElementById('res-vol-m3').textContent = fmt(vol, 3);
+      document.getElementById('res-vol-cft').textContent = fmt(vol * 35.315, 2);
+      document.getElementById('res-weight').textContent = fmt(weight, 1);
+      document.getElementById('res-weight-ton').textContent = fmt(weight / 1000, 3) + ' ton';
+      document.getElementById('res-bags').textContent = fmt(Math.ceil(weight * 0.22 / 50), 0) + ' bags';
+    }
+
+    // ========== COPY RESULTS ==========
+    function copyResults(type) {
+      let text = '';
+      
+      if (type === 'angle') {
+        const hyp = document.getElementById('res-hyp').textContent;
+        const area = document.getElementById('res-area').textContent;
+        const peri = document.getElementById('res-peri').textContent;
+        if (hyp === '—') return;
+        text = `Right Triangle Results:\nHypotenuse: ${hyp} m\nArea: ${area} m²\nPerimeter: ${peri} m`;
+      } 
+      else if (type === 'mix') {
+        const cement = document.getElementById('res-cement').textContent;
+        const sand = document.getElementById('res-sand').textContent;
+        const agg = document.getElementById('res-agg').textContent;
+        if (cement === '—') return;
+        text = `Concrete Mix Results:\nCement: ${cement} bags\nSand: ${sand} m³\nAggregate: ${agg} m³`;
+      } 
+      else if (type === 'volume') {
+        const vol = document.getElementById('res-vol-m3').textContent;
+        const wt = document.getElementById('res-weight').textContent;
+        if (vol === '—') return;
+        text = `Volume & Weight Results:\nVolume: ${vol} m³\nWeight: ${wt} kg`;
+      }
+      
+      navigator.clipboard.writeText(text).then(() => showToast());
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+  </script>
+</body>
+</html>
