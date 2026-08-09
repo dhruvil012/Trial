@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civil Engineer Calculator Pro</title>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --surface: #111827;
+      --surface-hover: #1a2236;
+      --surface-light: #1f2937;
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --accent-glow: rgba(59,130,246,0.15);
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --cyan: #06b6d4;
+      --border: #1e293b;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.5);
+      --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .header {
+      text-align: center;
+      padding: 40px 16px 20px;
+      background: linear-gradient(180deg, #0f172a 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+    }
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .tabs-wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 12px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .tab::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .tab:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: var(--surface-hover);
+      transform: translateY(-2px);
+    }
+    .tab.active {
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 24px rgba(59,130,246,0.35);
+    }
+    .tab.active::before { opacity: 1; }
+    .tab span { position: relative; z-index: 1; }
+    .tab svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .panel {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .panel.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 12px 50px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title svg {
+      width: 22px;
+      height: 22px;
+      color: var(--accent-light);
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+    }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+    .input-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+    input, select {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+    }
+    input::placeholder { color: var(--text-muted); }
+    .unit {
+      padding: 0 14px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-left: 1px solid var(--border);
+      background: var(--surface-light);
+      white-space: nowrap;
+    }
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    select option { background: var(--surface); color: var(--text); }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .result-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 18px 12px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-box::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .result-box:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .result-box:hover::after { opacity: 1; }
+    .result-box.primary { border-color: var(--accent); background: rgba(59,130,246,0.06); }
+    .result-box.primary::after { background: var(--accent); opacity: 1; }
+    .result-box.warning { border-color: var(--warning); background: rgba(245,158,11,0.06); }
+    .result-box.warning::after { background: var(--warning); opacity: 1; }
+    .result-box.success { border-color: var(--success); background: rgba(34,197,94,0.06); }
+    .result-box.success::after { background: var(--success); opacity: 1; }
+    .result-box.danger { border-color: var(--danger); background: rgba(239,68,68,0.06); }
+    .result-box.danger::after { background: var(--danger); opacity: 1; }
+    .result-box.purple { border-color: var(--purple); background: rgba(168,85,247,0.06); }
+    .result-box.purple::after { background: var(--purple); opacity: 1; }
+    .result-box.pink { border-color: var(--pink); background: rgba(236,72,153,0.06); }
+    .result-box.pink::after { background: var(--pink); opacity: 1; }
+    .result-box.cyan { border-color: var(--cyan); background: rgba(6,182,212,0.06); }
+    .result-box.cyan::after { background: var(--cyan); opacity: 1; }
+    .result-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+    .result-box.primary .result-value { color: var(--accent-light); }
+    .result-box.warning .result-value { color: var(--warning); }
+    .result-box.success .result-value { color: var(--success); }
+    .result-box.danger .result-value { color: var(--danger); }
+    .result-box.purple .result-value { color: var(--purple); }
+    .result-box.pink .result-value { color: var(--pink); }
+    .result-box.cyan .result-value { color: var(--cyan); }
+    .result-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .detail-box {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row span:first-child { color: var(--text-secondary); }
+    .detail-row span:last-child { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+    .verify-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+    }
+    .verify-box.show { display: flex; }
+    .verify-box.ok {
+      background: rgba(34,197,94,0.1);
+      color: var(--success);
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+    .verify-box.no {
+      background: rgba(239,68,68,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.25);
+    }
+    .verify-box svg { width: 18px; height: 18px; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .hint {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: rgba(59,130,246,0.05);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--accent);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .hint svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .copy-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .formula-text {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-family: 'Courier New', monospace;
+    }
+    .btn-copy, .btn-clear {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-copy:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .btn-clear:hover {
+      background: var(--danger);
+      color: white;
+      border-color: var(--danger);
+    }
+    .btn-copy svg, .btn-clear svg { width: 14px; height: 14px; }
+    .conv-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .conv-row .form-group { flex: 1; min-width: 130px; }
+    .swap-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface-light);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+      margin-top: 22px;
+    }
+    .swap-btn:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      transform: rotate(180deg) scale(1.1);
+    }
+    .swap-btn:active { transform: rotate(180deg) scale(0.95); }
+    .swap-btn svg { width: 18px; height: 18px; }
+    .radio-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .radio-btn {
+      padding: 10px 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .radio-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .radio-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+    }
+    .footer {
+      text-align: center;
+      padding: 30px 16px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border);
+    }
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--success);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .hidden { display: none !important; }
+    .custom-ratio-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+      animation: fadeIn 0.3s ease;
+    }
+    .unit-select-wrap {
+      min-width: 80px;
+    }
+    .unit-select-wrap select {
+      padding: 12px 10px;
+      padding-right: 28px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background-position: right 8px center;
+    }
+    .dim-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+    .dim-row .form-group:first-child { margin-bottom: 0; }
+    @media (max-width: 640px) {
+      .header h1 { font-size: 1.4rem; }
+      .tab { min-width: 120px; padding: 10px 10px; font-size: 0.75rem; }
+      .card { padding: 18px; }
+      .result-value { font-size: 1.3rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .conv-row { flex-direction: column; }
+      .conv-row .form-group { width: 100%; }
+      .swap-btn { margin-top: 0; align-self: center; }
+      .custom-ratio-row { grid-template-columns: 1fr; }
+      .dim-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Civil Engineer Calculator Pro</h1>
+    <p>Professional tools for every civil engineer</p>
+  </header>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l9-18 9 18H3z"/><path d="M12 21V3"/></svg>
+        <span>90° Angle</span>
+      </button>
+      <button class="tab" onclick="switchTab(1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <span>Mix Design</span>
+      </button>
+      <button class="tab" onclick="switchTab(2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <span>Volume</span>
+      </button>
+      <button class="tab" onclick="switchTab(3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3M4 17v3h3M20 7V4h-3M20 17v3h-3M9 9h6v6H9z"/></svg>
+        <span>Converter</span>
+      </button>
+      <button class="tab" onclick="switchTab(4)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 002-2V7.5L14.5 2H6a2 2 0 00-2 2v4"/><path d="M14 2v6h6"/><path d="M2 15h10"/><path d="M5 12v6"/><path d="M9 12v6"/></svg>
+        <span>Steel</span>
+      </button>
+      <button class="tab" onclick="switchTab(5)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        <span>Brickwork</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- PANEL 0: 90° Angle -->
+    <div class="panel active" id="panel-0">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l9-18 9 18H3z"/><path d="M12 21V3"/></svg>
+          Right Triangle Solver
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Side A (Base)</label>
+            <div class="input-wrap">
+              <input type="number" id="ang-a" placeholder="0.00" step="any" oninput="calcAngle()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Side B (Height)</label>
+            <div class="input-wrap">
+              <input type="number" id="ang-b" placeholder="0.00" step="any" oninput="calcAngle()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Hypotenuse C</label>
+          <div class="input-wrap">
+            <input type="number" id="ang-c" placeholder="0.00" step="any" oninput="calcAngle()">
+            <span class="unit">m</span>
+          </div>
+        </div>
+        <div class="verify-box" id="ang-verify">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="ang-verify-text"></span>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+          <button class="btn-clear" onclick="clearAngle()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            Clear All
+          </button>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Enter any two sides to find the third. Enter all three to verify. Tolerance ±0.05 m for verification.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Results
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-hyp">—</div>
+            <div class="result-label">Hypotenuse (m)</div>
+          </div>
+          <div class="result-box">
+            <div class="result-value" id="res-area">—</div>
+            <div class="result-label">Area (m²)</div>
+          </div>
+          <div class="result-box">
+            <div class="result-value" id="res-peri">—</div>
+            <div class="result-label">Perimeter (m)</div>
+          </div>
+          <div class="result-box purple">
+            <div class="result-value" id="res-angle-a">—</div>
+            <div class="result-label">Angle A (°)</div>
+          </div>
+          <div class="result-box pink">
+            <div class="result-value" id="res-angle-b">—</div>
+            <div class="result-label">Angle B (°)</div>
+          </div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text">a² + b² = c²</span>
+          <button class="btn-copy" onclick="copyResults(0)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 1: Mix Design -->
+    <div class="panel" id="panel-1">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Concrete Grade & Volume
+        </div>
+        <div class="form-group">
+          <label>Concrete Grade</label>
+          <div class="input-wrap">
+            <select id="mix-grade" onchange="onGradeChange()">
+              <option value="M10">M10 — 1 : 3 : 6</option>
+              <option value="M15">M15 — 1 : 2 : 4</option>
+              <option value="M20" selected>M20 — 1 : 1.5 : 3</option>
+              <option value="M25">M25 — 1 : 1 : 2</option>
+              <option value="M30">M30 — 1 : 0.75 : 1.5</option>
+              <option value="M35">M35 — 1 : 0.6 : 1.2</option>
+              <option value="M40">M40 — 1 : 0.5 : 1</option>
+              <option value="CUSTOM">Custom Ratio</option>
+            </select>
+          </div>
+        </div>
+        <div id="custom-ratio-box" class="custom-ratio-row hidden">
+          <div class="form-group">
+            <label>Cement</label>
+            <div class="input-wrap">
+              <input type="number" id="mix-r1" value="1" step="any" oninput="calcMix()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Sand</label>
+            <div class="input-wrap">
+              <input type="number" id="mix-r2" value="1.5" step="any" oninput="calcMix()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Aggregate</label>
+            <div class="input-wrap">
+              <input type="number" id="mix-r3" value="3" step="any" oninput="calcMix()">
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Wet Volume of Concrete</label>
+            <div class="input-wrap">
+              <input type="number" id="mix-vol" placeholder="0.00" step="any" oninput="calcMix()">
+            </div>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Unit</label>
+            <div class="input-wrap">
+              <select id="mix-vol-unit" onchange="calcMix()">
+                <option value="m3" selected>m³</option>
+                <option value="ft3">ft³</option>
+                <option value="L">Litres</option>
+                <option value="yd3">yd³</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Dry Volume = Wet x 1.54. Bag = 50 kg. Densities: Cement 1440, Sand 1600, Aggregate 1500 kg/m³.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Material Quantities
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-cement">—</div>
+            <div class="result-label">Cement (bags)</div>
+          </div>
+          <div class="result-box warning">
+            <div class="result-value" id="res-sand">—</div>
+            <div class="result-label">Sand (m³)</div>
+          </div>
+          <div class="result-box success">
+            <div class="result-value" id="res-agg">—</div>
+            <div class="result-label">Aggregate (m³)</div>
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-row"><span>Cement (kg)</span><span id="res-cement-kg">—</span></div>
+          <div class="detail-row"><span>Cement (ton)</span><span id="res-cement-ton">—</span></div>
+          <div class="detail-row"><span>Sand (kg)</span><span id="res-sand-kg">—</span></div>
+          <div class="detail-row"><span>Sand (ton)</span><span id="res-sand-ton">—</span></div>
+          <div class="detail-row"><span>Aggregate (kg)</span><span id="res-agg-kg">—</span></div>
+          <div class="detail-row"><span>Aggregate (ton)</span><span id="res-agg-ton">—</span></div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text" id="mix-ratio-label">Ratio: 1 : 1.5 : 3</span>
+          <button class="btn-copy" onclick="copyResults(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: Volume & Weight -->
+    <div class="panel" id="panel-2">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          Dimensions & Density
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Length</label>
+            <div class="dim-row">
+              <div class="input-wrap">
+                <input type="number" id="vol-l" placeholder="0.00" step="any" oninput="calcVolume()">
+              </div>
+              <div class="input-wrap unit-select-wrap">
+                <select id="vol-l-unit" onchange="calcVolume()">
+                  <option value="m" selected>m</option>
+                  <option value="cm">cm</option>
+                  <option value="mm">mm</option>
+                  <option value="km">km</option>
+                  <option value="ft">ft</option>
+                  <option value="in">in</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Breadth</label>
+            <div class="dim-row">
+              <div class="input-wrap">
+                <input type="number" id="vol-b" placeholder="0.00" step="any" oninput="calcVolume()">
+              </div>
+              <div class="input-wrap unit-select-wrap">
+                <select id="vol-b-unit" onchange="calcVolume()">
+                  <option value="m" selected>m</option>
+                  <option value="cm">cm</option>
+                  <option value="mm">mm</option>
+                  <option value="km">km</option>
+                  <option value="ft">ft</option>
+                  <option value="in">in</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Height / Thickness</label>
+            <div class="dim-row">
+              <div class="input-wrap">
+                <input type="number" id="vol-h" placeholder="0.00" step="any" oninput="calcVolume()">
+              </div>
+              <div class="input-wrap unit-select-wrap">
+                <select id="vol-h-unit" onchange="calcVolume()">
+                  <option value="m" selected>m</option>
+                  <option value="cm">cm</option>
+                  <option value="mm">mm</option>
+                  <option value="km">km</option>
+                  <option value="ft">ft</option>
+                  <option value="in">in</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Concrete Density (kg/m³)</label>
+            <div class="input-wrap">
+              <input type="number" id="vol-density" value="2400" step="any" oninput="calcVolume()">
+              <span class="unit">kg/m³</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cement Bag Size</label>
+            <div class="input-wrap">
+              <input type="number" id="vol-bagsize" value="50" step="any" oninput="calcVolume()">
+              <span class="unit">kg</span>
+            </div>
+          </div>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          All dimensions auto-convert to meters. Change density for different materials (RCC=2500, PCC=2400, Brick=1920).
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Results
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-vol-m3">—</div>
+            <div class="result-label">Volume (m³)</div>
+          </div>
+          <div class="result-box warning">
+            <div class="result-value" id="res-vol-cft">—</div>
+            <div class="result-label">Volume (ft³)</div>
+          </div>
+          <div class="result-box success">
+            <div class="result-value" id="res-weight">—</div>
+            <div class="result-label">Weight (kg)</div>
+          </div>
+          <div class="result-box purple">
+            <div class="result-value" id="res-vol-area">—</div>
+            <div class="result-label">Area (m²)</div>
+          </div>
+          <div class="result-box pink">
+            <div class="result-value" id="res-weight-ton">—</div>
+            <div class="result-label">Weight (ton)</div>
+          </div>
+          <div class="result-box cyan">
+            <div class="result-value" id="res-bags">—</div>
+            <div class="result-label">Cement Bags</div>
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-row"><span>Area (ft²)</span><span id="res-area-ft">—</span></div>
+          <div class="detail-row"><span>Volume (L)</span><span id="res-vol-l">—</span></div>
+          <div class="detail-row"><span>Volume (yd³)</span><span id="res-vol-yd">—</span></div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text">Volume = L x B x H</span>
+          <button class="btn-copy" onclick="copyResults(2)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: Unit Converter -->
+    <div class="panel" id="panel-3">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h3M4 17v3h3M20 7V4h-3M20 17v3h-3M9 9h6v6H9z"/></svg>
+          Unit Converter
+        </div>
+        <div class="radio-group">
+          <div class="radio-btn active" onclick="setConvType('length')">Length</div>
+          <div class="radio-btn" onclick="setConvType('area')">Area</div>
+          <div class="radio-btn" onclick="setConvType('volume')">Volume</div>
+          <div class="radio-btn" onclick="setConvType('weight')">Weight</div>
+          <div class="radio-btn" onclick="setConvType('pressure')">Pressure</div>
+          <div class="radio-btn" onclick="setConvType('force')">Force</div>
+        </div>
+        <div class="conv-row">
+          <div class="form-group" style="flex:1.3">
+            <label>From</label>
+            <div class="input-wrap">
+              <input type="number" id="conv-in" placeholder="0" step="any" oninput="calcConv()">
+            </div>
+          </div>
+          <div class="form-group" style="flex:0.9">
+            <label>Unit</label>
+            <div class="input-wrap">
+              <select id="conv-from" onchange="calcConv()"></select>
+            </div>
+          </div>
+          <button class="swap-btn" onclick="swapConv()" title="Swap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+          </button>
+          <div class="form-group" style="flex:1.3">
+            <label>To</label>
+            <div class="input-wrap">
+              <input type="number" id="conv-out" placeholder="0" step="any" readonly>
+            </div>
+          </div>
+          <div class="form-group" style="flex:0.9">
+            <label>Unit</label>
+            <div class="input-wrap">
+              <select id="conv-to" onchange="calcConv()"></select>
+            </div>
+          </div>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Select category, enter value, and choose units. Result updates instantly. Swap button works in one click.
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 4: Steel Weight -->
+    <div class="panel" id="panel-4">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 002-2V7.5L14.5 2H6a2 2 0 00-2 2v4"/><path d="M14 2v6h6"/><path d="M2 15h10"/><path d="M5 12v6"/><path d="M9 12v6"/></svg>
+          Steel (Rebar) Weight Calculator
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Bar Diameter</label>
+            <div class="input-wrap">
+              <select id="steel-dia" onchange="calcSteel()">
+                <option value="6">6 mm</option>
+                <option value="8">8 mm</option>
+                <option value="10">10 mm</option>
+                <option value="12" selected>12 mm</option>
+                <option value="16">16 mm</option>
+                <option value="20">20 mm</option>
+                <option value="25">25 mm</option>
+                <option value="32">32 mm</option>
+                <option value="40">40 mm</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Total Length</label>
+            <div class="input-wrap">
+              <input type="number" id="steel-len" placeholder="0" step="any" oninput="calcSteel()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>No. of Bars</label>
+            <div class="input-wrap">
+              <input type="number" id="steel-qty" placeholder="1" value="1" min="1" step="1" oninput="calcSteel()">
+              <span class="unit">nos</span>
+            </div>
+          </div>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Formula: Weight (kg) = D² x L / 162. D in mm, L in meter. Density = 7850 kg/m³.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Results
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-steel-kg">—</div>
+            <div class="result-label">Weight (kg)</div>
+          </div>
+          <div class="result-box warning">
+            <div class="result-value" id="res-steel-ton">—</div>
+            <div class="result-label">Weight (ton)</div>
+          </div>
+          <div class="result-box success">
+            <div class="result-value" id="res-steel-perm">—</div>
+            <div class="result-label">Per Meter (kg)</div>
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-row"><span>Total Length</span><span id="res-steel-totlen">—</span></div>
+          <div class="detail-row"><span>Bar Weight (each)</span><span id="res-steel-each">—</span></div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text">W = D² x L / 162</span>
+          <button class="btn-copy" onclick="copyResults(4)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- PANEL 5: Brickwork -->
+    <div class="panel" id="panel-5">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          Brickwork & Mortar Calculator
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Wall Length</label>
+            <div class="input-wrap">
+              <input type="number" id="brick-l" placeholder="0" step="any" oninput="calcBrick()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Wall Height</label>
+            <div class="input-wrap">
+              <input type="number" id="brick-h" placeholder="0" step="any" oninput="calcBrick()">
+              <span class="unit">m</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Wall Thickness</label>
+            <div class="input-wrap">
+              <select id="brick-thick" onchange="calcBrick()">
+                <option value="0.115">4 inch (115 mm)</option>
+                <option value="0.23" selected>9 inch (230 mm)</option>
+                <option value="0.345">13.5 inch (345 mm)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mortar Thickness</label>
+            <div class="input-wrap">
+              <select id="brick-mortar" onchange="calcBrick()">
+                <option value="0.01">10 mm</option>
+                <option value="0.012" selected>12 mm</option>
+                <option value="0.015">15 mm</option>
+                <option value="0.02">20 mm</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Brick Size</label>
+            <div class="input-wrap">
+              <select id="brick-size" onchange="calcBrick()">
+                <option value="std" selected>Standard (190x90x90 mm)</option>
+                <option value="mod">Modular (200x100x100 mm)</option>
+                <option value="eng">English (230x115x75 mm)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Wastage %</label>
+            <div class="input-wrap">
+              <input type="number" id="brick-waste" value="5" min="0" max="50" step="1" oninput="calcBrick()">
+              <span class="unit">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          Standard brick with 12mm mortar. Cement-sand ratio 1:6 assumed for mortar. Wastage default 5%.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Results
+        </div>
+        <div class="results-grid">
+          <div class="result-box primary">
+            <div class="result-value" id="res-bricks">—</div>
+            <div class="result-label">Bricks (nos)</div>
+          </div>
+          <div class="result-box warning">
+            <div class="result-value" id="res-brick-cement">—</div>
+            <div class="result-label">Cement (bags)</div>
+          </div>
+          <div class="result-box success">
+            <div class="result-value" id="res-brick-sand">—</div>
+            <div class="result-label">Sand (m³)</div>
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-row"><span>Wall Volume</span><span id="res-brick-vol">—</span></div>
+          <div class="detail-row"><span>Brick Volume (without mortar)</span><span id="res-brick-bvol">—</span></div>
+          <div class="detail-row"><span>Mortar Volume</span><span id="res-brick-mvol">—</span></div>
+          <div class="detail-row"><span>Bricks with wastage</span><span id="res-brick-waste">—</span></div>
+        </div>
+        <div class="copy-bar">
+          <span class="formula-text">No. of bricks = Wall Vol / (Brick + Mortar Vol)</span>
+          <button class="btn-copy" onclick="copyResults(5)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    Made with love for Civil Engineers &middot; All calculations are approximate
+  </footer>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    // ========================
+    // UTILITIES
+    // ========================
+    function switchTab(idx) {
+      document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+      document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+    }
+
+    function fmt(num, d) {
+      if (num == null || isNaN(num) || !isFinite(num)) return '—';
+      return Number(num).toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg || 'Copied to clipboard!';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // ========================
+    // PANEL 0: 90° ANGLE
+    // ========================
+    function clearAngle() {
+      document.getElementById('ang-a').value = '';
+      document.getElementById('ang-b').value = '';
+      document.getElementById('ang-c').value = '';
+      calcAngle();
+    }
+
+    function calcAngle() {
+      const a = parseFloat(document.getElementById('ang-a').value);
+      const b = parseFloat(document.getElementById('ang-b').value);
+      const c = parseFloat(document.getElementById('ang-c').value);
+      const ha = !isNaN(a) && a > 0, hb = !isNaN(b) && b > 0, hc = !isNaN(c) && c > 0;
+      const vb = document.getElementById('ang-verify'), vt = document.getElementById('ang-verify-text');
+
+      let hyp = null, area = null, peri = null, angA = null, angB = null;
+
+      if (ha && hb && hc) {
+        const diff = Math.abs(a*a + b*b - c*c);
+        const tol = 0.05;
+        const isRight = diff < tol;
+        vb.className = 'verify-box show ' + (isRight ? 'ok' : 'no');
+        vt.textContent = (isRight ? 'Valid' : 'Not a') + ' right triangle (tolerance ±0.05 m)';
+        hyp = c;
+        area = 0.5 * a * b;
+        peri = a + b + c;
+        angA = Math.atan(a / b) * 180 / Math.PI;
+        angB = Math.atan(b / a) * 180 / Math.PI;
+      } else if (ha && hb) {
+        hyp = Math.sqrt(a*a + b*b);
+        area = 0.5 * a * b;
+        peri = a + b + hyp;
+        angA = Math.atan(a / b) * 180 / Math.PI;
+        angB = Math.atan(b / a) * 180 / Math.PI;
+        vb.className = 'verify-box';
+      } else if (ha && hc && c > a) {
+        const sb = Math.sqrt(c*c - a*a);
+        hyp = c;
+        area = 0.5 * a * sb;
+        peri = a + sb + c;
+        angA = Math.atan(a / sb) * 180 / Math.PI;
+        angB = Math.atan(sb / a) * 180 / Math.PI;
+        vb.className = 'verify-box';
+      } else if (hb && hc && c > b) {
+        const sa = Math.sqrt(c*c - b*b);
+        hyp = c;
+        area = 0.5 * sa * b;
+        peri = sa + b + c;
+        angA = Math.atan(sa / b) * 180 / Math.PI;
+        angB = Math.atan(b / sa) * 180 / Math.PI;
+        vb.className = 'verify-box';
+      } else {
+        vb.className = 'verify-box';
+      }
+
+      document.getElementById('res-hyp').textContent = hyp != null ? fmt(hyp, 2) : '—';
+      document.getElementById('res-area').textContent = area != null ? fmt(area, 3) : '—';
+      document.getElementById('res-peri').textContent = peri != null ? fmt(peri, 2) : '—';
+      document.getElementById('res-angle-a').textContent = angA != null ? fmt(angA, 2) + '°' : '—';
+      document.getElementById('res-angle-b').textContent = angB != null ? fmt(angB, 2) + '°' : '—';
+    }
+
+    // ========================
+    // PANEL 1: MIX DESIGN
+    // ========================
+    const ratios = { M10:[1,3,6], M15:[1,2,4], M20:[1,1.5,3], M25:[1,1,2], M30:[1,0.75,1.5], M35:[1,0.6,1.2], M40:[1,0.5,1] };
+
+    function onGradeChange() {
+      const g = document.getElementById('mix-grade').value;
+      const customBox = document.getElementById('custom-ratio-box');
+      if (g === 'CUSTOM') {
+        customBox.classList.remove('hidden');
+      } else {
+        customBox.classList.add('hidden');
+        const r = ratios[g];
+        document.getElementById('mix-ratio-label').textContent = 'Ratio: ' + r[0] + ' : ' + r[1] + ' : ' + r[2];
+      }
+      calcMix();
+    }
+
+    function calcMix() {
+      const g = document.getElementById('mix-grade').value;
+      let r;
+      if (g === 'CUSTOM') {
+        r = [
+          parseFloat(document.getElementById('mix-r1').value) || 1,
+          parseFloat(document.getElementById('mix-r2').value) || 1,
+          parseFloat(document.getElementById('mix-r3').value) || 1
+        ];
+        document.getElementById('mix-ratio-label').textContent = 'Ratio: ' + r[0] + ' : ' + r[1] + ' : ' + r[2];
+      } else {
+        r = ratios[g];
+      }
+
+      const v = parseFloat(document.getElementById('mix-vol').value);
+      const unit = document.getElementById('mix-vol-unit').value;
+      if (isNaN(v) || v <= 0) {
+        ['res-cement','res-sand','res-agg','res-cement-kg','res-cement-ton','res-sand-kg','res-sand-ton','res-agg-kg','res-agg-ton'].forEach(id => document.getElementById(id).textContent = '—');
+        return;
+      }
+
+      let vm3 = v;
+      if (unit === 'ft3') vm3 = v * 0.0283168;
+      else if (unit === 'L') vm3 = v * 0.001;
+      else if (unit === 'yd3') vm3 = v * 0.764555;
+
+      const dv = vm3 * 1.54, sum = r[0] + r[1] + r[2];
+      const ce = dv * r[0] / sum, sa = dv * r[1] / sum, ag = dv * r[2] / sum;
+      const cek = ce * 1440, sak = sa * 1600, agk = ag * 1500;
+
+      document.getElementById('res-cement').textContent = fmt(Math.ceil(cek / 50), 0);
+      document.getElementById('res-sand').textContent = fmt(sa, 3);
+      document.getElementById('res-agg').textContent = fmt(ag, 3);
+      document.getElementById('res-cement-kg').textContent = fmt(cek, 1) + ' kg';
+      document.getElementById('res-cement-ton').textContent = fmt(cek / 1000, 3) + ' ton';
+      document.getElementById('res-sand-kg').textContent = fmt(sak, 1) + ' kg';
+      document.getElementById('res-sand-ton').textContent = fmt(sak / 1000, 3) + ' ton';
+      document.getElementById('res-agg-kg').textContent = fmt(agk, 1) + ' kg';
+      document.getElementById('res-agg-ton').textContent = fmt(agk / 1000, 3) + ' ton';
+    }
+
+    // ========================
+    // PANEL 2: VOLUME & WEIGHT
+    // ========================
+    const lenUnits = { m:1, cm:0.01, mm:0.001, km:1000, ft:0.3048, in:0.0254 };
+
+    function toMeters(val, unit) {
+      return val * (lenUnits[unit] || 1);
+    }
+
+    function calcVolume() {
+      const l = parseFloat(document.getElementById('vol-l').value);
+      const b = parseFloat(document.getElementById('vol-b').value);
+      const h = parseFloat(document.getElementById('vol-h').value);
+      const lU = document.getElementById('vol-l-unit').value;
+      const bU = document.getElementById('vol-b-unit').value;
+      const hU = document.getElementById('vol-h-unit').value;
+      const density = parseFloat(document.getElementById('vol-density').value) || 2400;
+      const bagSize = parseFloat(document.getElementById('vol-bagsize').value) || 50;
+
+      if (isNaN(l) || isNaN(b) || isNaN(h) || l <= 0 || b <= 0 || h <= 0) {
+        ['res-vol-m3','res-vol-cft','res-weight','res-vol-area','res-weight-ton','res-bags','res-area-ft','res-vol-l','res-vol-yd'].forEach(id => document.getElementById(id).textContent = '—');
+        return;
+      }
+
+      const lm = toMeters(l, lU), bm = toMeters(b, bU), hm = toMeters(h, hU);
+      const vol = lm * bm * hm;
+      const w = vol * density;
+      const area = lm * bm;
+
+      document.getElementById('res-vol-m3').textContent = fmt(vol, 3);
+      document.getElementById('res-vol-cft').textContent = fmt(vol * 35.315, 2);
+      document.getElementById('res-weight').textContent = fmt(w, 1);
+      document.getElementById('res-vol-area').textContent = fmt(area, 3);
+      document.getElementById('res-weight-ton').textContent = fmt(w / 1000, 3);
+      document.getElementById('res-bags').textContent = fmt(Math.ceil(w * 0.22 / bagSize), 0);
+      document.getElementById('res-area-ft').textContent = fmt(area * 10.764, 2) + ' ft²';
+      document.getElementById('res-vol-l').textContent = fmt(vol * 1000, 1) + ' L';
+      document.getElementById('res-vol-yd').textContent = fmt(vol * 1.308, 3) + ' yd³';
+    }
+
+    // ========================
+    // PANEL 3: UNIT CONVERTER
+    // ========================
+    const convData = {
+      length: {
+        units: { m:1, cm:0.01, mm:0.001, km:1000, ft:0.3048, in:0.0254, yd:0.9144, mi:1609.344, nmi:1852 },
+        defaults: ['m','ft']
+      },
+      area: {
+        units: { 'm2':1, 'cm2':0.0001, 'mm2':0.000001, 'ft2':0.092903, 'in2':0.00064516, 'yd2':0.836127, 'acre':4046.86, 'hectare':10000 },
+        defaults: ['m2','ft2']
+      },
+      volume: {
+        units: { 'm3':1, 'L':0.001, 'cm3':0.000001, 'ft3':0.0283168, 'in3':0.000016387, 'galUS':0.00378541, 'galUK':0.00454609, 'yd3':0.764555 },
+        defaults: ['m3','ft3']
+      },
+      weight: {
+        units: { kg:1, g:0.001, mg:0.000001, ton:1000, lb:0.453592, oz:0.0283495, quintal:100, stone:6.35029 },
+        defaults: ['kg','ton']
+      },
+      pressure: {
+        units: { Pa:1, kPa:1000, MPa:1000000, 'N/mm2':1000000, bar:100000, psi:6894.76, 'kg/cm2':98066.5, atm:101325 },
+        defaults: ['MPa','N/mm2']
+      },
+      force: {
+        units: { N:1, kN:1000, MN:1000000, kgf:9.80665, lbf:4.44822, dyn:0.00001 },
+        defaults: ['kN','N']
+      }
+    };
+    let convType = 'length';
+
+    function populateConv() {
+      const data = convData[convType];
+      const fromSel = document.getElementById('conv-from');
+      const toSel = document.getElementById('conv-to');
+      fromSel.innerHTML = '';
+      toSel.innerHTML = '';
+      Object.keys(data.units).forEach(u => {
+        fromSel.add(new Option(u, u));
+        toSel.add(new Option(u, u));
+      });
+      fromSel.value = data.defaults[0];
+      toSel.value = data.defaults[1];
+    }
+
+    function setConvType(type) {
+      convType = type;
+      document.querySelectorAll('.radio-btn').forEach((btn, i) => {
+        const types = ['length','area','volume','weight','pressure','force'];
+        btn.classList.toggle('active', types[i] === type);
+      });
+      populateConv();
+      calcConv();
+    }
+
+    function calcConv() {
+      const val = parseFloat(document.getElementById('conv-in').value);
+      const from = document.getElementById('conv-from').value;
+      const to = document.getElementById('conv-to').value;
+      if (isNaN(val)) { document.getElementById('conv-out').value = ''; return; }
+      const base = val * convData[convType].units[from];
+      const result = base / convData[convType].units[to];
+      document.getElementById('conv-out').value = result.toFixed(6).replace(/\.?0+$/, '');
+    }
+
+    function swapConv() {
+      const from = document.getElementById('conv-from');
+      const to = document.getElementById('conv-to');
+      const tmp = from.value;
+      from.value = to.value;
+      to.value = tmp;
+      calcConv();
+    }
+
+    // ========================
+    // PANEL 4: STEEL WEIGHT
+    // ========================
+    function calcSteel() {
+      const d = parseFloat(document.getElementById('steel-dia').value);
+      const len = parseFloat(document.getElementById('steel-len').value);
+      const qty = parseFloat(document.getElementById('steel-qty').value) || 1;
+      if (isNaN(d) || isNaN(len) || len <= 0) {
+        ['res-steel-kg','res-steel-ton','res-steel-perm','res-steel-totlen','res-steel-each'].forEach(id => document.getElementById(id).textContent = '—');
+        return;
+      }
+      const totalLen = len * qty;
+      const eachKg = (d * d * len) / 162;
+      const totalKg = (d * d * totalLen) / 162;
+      const perM = (d * d) / 162;
+      document.getElementById('res-steel-kg').textContent = fmt(totalKg, 2);
+      document.getElementById('res-steel-ton').textContent = fmt(totalKg / 1000, 3);
+      document.getElementById('res-steel-perm').textContent = fmt(perM, 3);
+      document.getElementById('res-steel-totlen').textContent = fmt(totalLen, 2) + ' m';
+      document.getElementById('res-steel-each').textContent = fmt(eachKg, 2) + ' kg';
+    }
+
+    // ========================
+    // PANEL 5: BRICKWORK
+    // ========================
+    function calcBrick() {
+      const l = parseFloat(document.getElementById('brick-l').value);
+      const h = parseFloat(document.getElementById('brick-h').value);
+      const thick = parseFloat(document.getElementById('brick-thick').value);
+      const mortar = parseFloat(document.getElementById('brick-mortar').value);
+      const size = document.getElementById('brick-size').value;
+      const waste = parseFloat(document.getElementById('brick-waste').value) || 0;
+
+      if (isNaN(l) || isNaN(h) || l <= 0 || h <= 0) {
+        ['res-bricks','res-brick-cement','res-brick-sand','res-brick-vol','res-brick-bvol','res-brick-mvol','res-brick-waste'].forEach(id => document.getElementById(id).textContent = '—');
+        return;
+      }
+
+      const brickSizes = { std:[0.19,0.09,0.09], mod:[0.2,0.1,0.1], eng:[0.23,0.115,0.075] };
+      const [bl, bw, bh] = brickSizes[size];
+      const wallVol = l * h * thick;
+      const brickVol = (bl + mortar) * (bw + mortar) * (bh + mortar);
+      const bricks = Math.ceil(wallVol / brickVol);
+      const bricksWaste = Math.ceil(bricks * (1 + waste / 100));
+      const mortarVol = wallVol - (bricks * bl * bw * bh);
+      const dryMortar = mortarVol * 1.33;
+      const cementVol = dryMortar / 7;
+      const cementKg = cementVol * 1440;
+      const sandVol = dryMortar * 6 / 7;
+
+      document.getElementById('res-bricks').textContent = fmt(bricks, 0);
+      document.getElementById('res-brick-cement').textContent = fmt(Math.ceil(cementKg / 50), 0);
+      document.getElementById('res-brick-sand').textContent = fmt(sandVol, 3);
+      document.getElementById('res-brick-vol').textContent = fmt(wallVol, 3) + ' m³';
+      document.getElementById('res-brick-bvol').textContent = fmt(bricks * bl * bw * bh, 3) + ' m³';
+      document.getElementById('res-brick-mvol').textContent = fmt(mortarVol, 3) + ' m³';
+      document.getElementById('res-brick-waste').textContent = fmt(bricksWaste, 0) + ' nos';
+    }
+
+    // ========================
+    // COPY RESULTS
+    // ========================
+    function copyResults(panelIdx) {
+      let text = '';
+      if (panelIdx === 0) {
+        text = '90° Angle Results:\nHypotenuse: ' + document.getElementById('res-hyp').textContent + ' m\nArea: ' + document.getElementById('res-area').textContent + ' m²\nPerimeter: ' + document.getElementById('res-peri').textContent + ' m\nAngle A: ' + document.getElementById('res-angle-a').textContent + '\nAngle B: ' + document.getElementById('res-angle-b').textContent;
+      } else if (panelIdx === 1) {
+        text = 'Concrete Mix Results:\nCement: ' + document.getElementById('res-cement').textContent + ' bags (' + document.getElementById('res-cement-ton').textContent + ')\nSand: ' + document.getElementById('res-sand').textContent + ' m³ (' + document.getElementById('res-sand-ton').textContent + ')\nAggregate: ' + document.getElementById('res-agg').textContent + ' m³ (' + document.getElementById('res-agg-ton').textContent + ')';
+      } else if (panelIdx === 2) {
+        text = 'Volume & Weight Results:\nVolume: ' + document.getElementById('res-vol-m3').textContent + ' m³\nWeight: ' + document.getElementById('res-weight').textContent + ' kg (' + document.getElementById('res-weight-ton').textContent + ' ton)';
+      } else if (panelIdx === 4) {
+        text = 'Steel Weight Results:\nTotal: ' + document.getElementById('res-steel-kg').textContent + ' kg\nPer meter: ' + document.getElementById('res-steel-perm').textContent + ' kg/m';
+      } else if (panelIdx === 5) {
+        text = 'Brickwork Results:\nBricks: ' + document.getElementById('res-bricks').textContent + ' nos\nCement: ' + document.getElementById('res-brick-cement').textContent + ' bags\nSand: ' + document.getElementById('res-brick-sand').textContent + ' m³';
+      }
+      if (text.includes('—')) { showToast('Please enter values first!'); return; }
+      navigator.clipboard.writeText(text).then(() => showToast());
+    }
+
+    // Init
+    populateConv();
+  </script>
+</body>
+</html>
